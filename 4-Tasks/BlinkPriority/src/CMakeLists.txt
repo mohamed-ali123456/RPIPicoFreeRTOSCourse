@@ -21,7 +21,7 @@ target_include_directories(${NAME} PRIVATE
 # create map/bin/hex file etc.
 pico_add_extra_outputs(${NAME})
 
-# enable usb output, disable uart output
+# enable usb output, and uart output
 pico_enable_stdio_usb(${NAME} 1)
 pico_enable_stdio_uart(${NAME} 1)
 target_compile_definitions(${NAME} PRIVATE
