@@ -42,7 +42,7 @@
 
 /* Scheduler Related */
 #define configUSE_PREEMPTION                    1
-#define configUSE_TICKLESS_IDLE                 1   
+#define configUSE_TICKLESS_IDLE                 1   //DeepSleep?
 #define configUSE_IDLE_HOOK                     0
 #define configUSE_TICK_HOOK                     0
 #define configTICK_RATE_HZ                      ( ( TickType_t ) 1000 )
@@ -102,13 +102,13 @@
 #define configMAX_API_CALL_INTERRUPT_PRIORITY   [dependent on processor and application]
 */
 
-// Multi Core
-#define configNUMBER_OF_CORES                   2
-#define configTICK_CORE                         0
-#define configRUN_MULTIPLE_PRIORITIES           1
-#define configUSE_CORE_AFFINITY                 1
-#define configNUM_CORES 					    configNUMBER_OF_CORES  //SDK still relies on this
-#define configUSE_PASSIVE_IDLE_HOOK			    0
+// Single Core
+#define configNUMBER_OF_CORES                       	1
+#define configTICK_CORE                         					0
+#define configRUN_MULTIPLE_PRIORITIES         0
+#define configUSE_CORE_AFFINITY                 		0
+#define configNUM_CORES 											configNUMBER_OF_CORES  //SDK still relies on this
+
 
 /* RP2040 specific */
 #define configSUPPORT_PICO_SYNC_INTEROP         1

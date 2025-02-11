@@ -1,8 +1,8 @@
 /***
- * Demo program to flash 5 LED attached to GPIO PAD 0, 2,3,4, 5.
+ * Demo program to show Logging Framework
  * Uses FreeRTOS Task
  * Jon Durrant
- * 15-Aug-2022
+ * 5-Feb-2025
  */
 
 
@@ -13,6 +13,8 @@
 #include <stdio.h>
 
 #include "BlinkAgent.h"
+#include "LogAgentA.h"
+#include "LogAgentB.h"
 
 
 //Standard Task priority
@@ -20,10 +22,7 @@
 
 //LED PAD to use
 #define LED_PAD					0
-#define LED1_PAD				2
-#define LED2_PAD				3
-#define LED3_PAD				4
-#define LED4_PAD				5
+
 
 
 
@@ -83,22 +82,19 @@ void runTimeStats(   ){
  */
 void mainTask(void *params){
 	BlinkAgent blink(LED_PAD);
-	BlinkAgent worker1(LED1_PAD);
-	BlinkAgent worker2(LED2_PAD);
-	BlinkAgent worker3(LED3_PAD);
-	BlinkAgent worker4(LED4_PAD);
+	LogAgentA agentA;
+	LogAgentB agentB;
+
 
 	printf("Main task started\n");
 
 	blink.start("Blink", TASK_PRIORITY);
-	worker1.start("Worker 1", TASK_PRIORITY);
-	worker2.start("Worker 2", TASK_PRIORITY + 1);
-	worker3.start("Worker 3", TASK_PRIORITY + 2);
-	worker4.start("Worker 4", TASK_PRIORITY + 3);
+	agentA.start("Agent A", TASK_PRIORITY);
+	agentB.start("Agent B", TASK_PRIORITY);
 
 	while (true) { // Loop forever
 		runTimeStats();
-		vTaskDelay(3000);
+		vTaskDelay(5000);
 	}
 }
 
