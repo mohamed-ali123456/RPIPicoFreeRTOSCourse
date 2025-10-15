@@ -21,9 +21,12 @@
 #define TASK_PRIORITY		( tskIDLE_PRIORITY + 1UL )
 
 //LED PAD to use
-#define LED_PAD				2
-#define LED1_PAD			3
-#define LED2_PAD			4
+#define LED_PAD				3
+#define LED1_PAD			2
+#define LED2_PAD			3
+
+//BOUADLA Mohamed ali
+//F14228822
 
 
 
