@@ -1,5 +1,5 @@
 /***
- * Demo program to flash an LED attached to GPIO PAD 0.
+ * Demo program to flash 5 LED attached to GPIO PAD 0, 2,3,4, 5.
  * Uses FreeRTOS Task
  * Jon Durrant
  * 15-Aug-2022
@@ -13,17 +13,20 @@
 #include <stdio.h>
 
 #include "BlinkAgent.h"
-#include "BlinkWorker.h"
-#include "BlinkHeavy.h"
 
 
 //Standard Task priority
 #define TASK_PRIORITY		( tskIDLE_PRIORITY + 1UL )
 
 //LED PAD to use
-#define LED_PAD				1
-#define LED1_PAD			2
-#define LED2_PAD			3
+#define LED_PAD					1
+#define LED1_PAD				2
+#define LED2_PAD				3
+#define LED3_PAD				4
+#define LED4_PAD				5
+
+//BOUADLA Mohamed ali
+//F14228822
 
 
 
@@ -83,14 +86,18 @@ void runTimeStats(   ){
  */
 void mainTask(void *params){
 	BlinkAgent blink(LED_PAD);
-	BlinkWorker worker1(LED1_PAD);
-	BlinkHeavy worker2(LED2_PAD);
+	BlinkAgent worker1(LED1_PAD);
+	BlinkAgent worker2(LED2_PAD);
+	BlinkAgent worker3(LED3_PAD);
+	BlinkAgent worker4(LED4_PAD);
 
 	printf("Main task started\n");
 
 	blink.start("Blink", TASK_PRIORITY);
-	worker1.start("Worker 1", TASK_PRIORITY+ 1);
-	worker2.start("Worker 2", TASK_PRIORITY + 2);
+	worker1.start("Worker 1", TASK_PRIORITY);
+	worker2.start("Worker 2", TASK_PRIORITY + 1);
+	worker3.start("Worker 3", TASK_PRIORITY + 2);
+	worker4.start("Worker 4", TASK_PRIORITY + 3);
 
 	while (true) { // Loop forever
 		runTimeStats();
@@ -122,14 +129,12 @@ int main( void )
 {
 	//Setup serial over USB and give a few seconds to settle before we start
     stdio_init_all();
-    sleep_ms(5000);
+    sleep_ms(2000);
     printf("GO\n");
 
     //Start tasks and scheduler
     const char *rtos_name = "FreeRTOS";
     printf("Starting %s on core 0:\n", rtos_name);
-	printf("Mohamed ali bouadla\n");
-	printf("F14228822\n");
     vLaunch();
 
 
