@@ -26,3 +26,4 @@ Mid Term Exam
 I add 4 leds
 i add myｎａｍｅ
 i add４workers
+i have 12 tasks createdｗｉｔｈ  RP2040
