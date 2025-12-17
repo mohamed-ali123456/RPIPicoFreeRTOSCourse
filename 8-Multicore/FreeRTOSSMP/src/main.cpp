@@ -159,6 +159,7 @@ int main( void )
     printf("%s on both cores:\n", rtos_name);
 #else
     printf("Starting %s on core 0:\n", rtos_name);
+	printf("BOUADLA Mohamed-Ali F14228822")
 #endif
 
     vLaunch();
