@@ -1,10 +1,13 @@
-/**
- * PROJET FINAL - CHAPITRE 10
- * MULTICORE, QUEUE, ET 8 LEDS BINAIRES
+/***
+ * Demo program to light 4 LEDs as binary random value.
+ * Uses FreeRTOS Task
+ * Jon Durrant
+ * 15-Aug-2022
  */
 
+
 #include "pico/stdlib.h"
-#include "pico/multicore.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include <stdio.h>
@@ -13,68 +16,126 @@
 #include "BlinkAgent.h"
 #include "CounterAgent.h"
 
-#define TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
 
-// Définition des 8 Pins GPIO pour les LEDs (Exemple: GPIO 2 à 9)
-#define L0 2
-#define L1 3
-#define L2 4
-#define L3 5
-#define L4 6
-#define L5 7
-#define L6 8
-#define L7 9
+//Standard Task priority
+#define TASK_PRIORITY       ( tskIDLE_PRIORITY + 1UL )
 
-// Instance globale de l'agent 8 LEDs
-CounterAgent counter(L0, L1, L2, L3, L4, L5, L6, L7);
+//LED PAD to use
+#define LED_PAD             0
+#define LED1_PAD            2
+#define LED2_PAD            3
+#define LED3_PAD            4
+#define LED4_PAD            5
+#define LED5_PAD            6
+#define LED6_PAD            7
+#define LED7_PAD            8
+#define LED8_PAD            9
 
-/**
- * Fonction s'exécutant sur le CORE 1 (Multicore)
- * Gère une tâche de calcul séparée
- */
-void core1_entry() {
-    printf("Core 1: Initialisé et prêt\n");
-    while (1) {
-        // Le Core 1 peut gérer des calculs lourds ici
-        tight_loop_contents();
-    }
+
+void runTimeStats(   ){
+    TaskStatus_t *pxTaskStatusArray;
+    volatile UBaseType_t uxArraySize, x;
+    unsigned long ulTotalRunTime;
+
+
+   // Get number of takss
+   uxArraySize = uxTaskGetNumberOfTasks();
+   printf("Number of tasks %d\n", uxArraySize);
+
+   //Allocate a TaskStatus_t structure for each task.
+   pxTaskStatusArray = (TaskStatus_t *)pvPortMalloc( uxArraySize * sizeof( TaskStatus_t ) );
+
+   if( pxTaskStatusArray != NULL ){
+      // Generate raw status information about each task.
+      uxArraySize = uxTaskGetSystemState( pxTaskStatusArray,
+                                 uxArraySize,
+                                 &ulTotalRunTime );
+
+     // Print stats
+     for( x = 0; x < uxArraySize; x++ )
+     {
+         printf("Task: %d \t cPri:%d \t bPri:%d \t hw:%d \t%s\n",
+                pxTaskStatusArray[ x ].xTaskNumber ,
+                pxTaskStatusArray[ x ].uxCurrentPriority ,
+                pxTaskStatusArray[ x ].uxBasePriority ,
+                pxTaskStatusArray[ x ].usStackHighWaterMark ,
+                pxTaskStatusArray[ x ].pcTaskName
+                );
+     }
+
+
+      // Free array
+      vPortFree( pxTaskStatusArray );
+   } else {
+       printf("Failed to allocate space for stats\n");
+   }
+
+   //Get heap allocation information
+   HeapStats_t heapStats;
+   vPortGetHeapStats(&heapStats);
+   printf("HEAP avl: %d, blocks %d, alloc: %d, free: %d\n",
+           heapStats.xAvailableHeapSpaceInBytes,
+           heapStats.xNumberOfFreeBlocks,
+           heapStats.xNumberOfSuccessfulAllocations,
+           heapStats.xNumberOfSuccessfulFrees
+           );
 }
 
-/**
- * Tâche principale FreeRTOS (Core 0)
+
+/***
+ * Main task to blink external LED
+ * @param params - unused
  */
 void mainTask(void *params){
-    printf("Main Task: Lancement du projet final\n");
-    
-    // Démarrage de l'agent
-    counter.start("Counter8Bit", TASK_PRIORITY);
+    BlinkAgent blink(LED_PAD);
+    CounterAgent counter(LED1_PAD, LED2_PAD, LED3_PAD, LED4_PAD,  LED5_PAD, LED6_PAD, LED7_PAD, LED8_PAD);
 
-    while (true) {
-        // Génération d'une valeur aléatoire 8-bit (0-255)
-        uint8_t val = rand() & 0xFF;
-        
-        printf("Queue: Envoi valeur %d (0x%X) vers LEDs\n", val, val);
-        
-        // On demande à l'agent de faire clignoter cette valeur
-        counter.blink(val);
-        
-        // Délai de 3 secondes avant la prochaine valeur
-        vTaskDelay(pdMS_TO_TICKS(3000));
+    printf("Main task started\n");
+
+    blink.start("Blink", TASK_PRIORITY);
+    counter.start("Counter", TASK_PRIORITY);
+
+    while (true) { // Loop forever
+        runTimeStats();
+        uint8_t r = rand() & 0x0F;
+        counter.on(r);
+        printf("Count R=0x%X\n", r);
+        vTaskDelay(3000);
     }
 }
 
+
+
+
+/***
+ * Launch the tasks and scheduler
+ */
+void vLaunch( void) {
+
+    //Start blink task
+    TaskHandle_t task;
+    xTaskCreate(mainTask, "MainThread", 500, NULL, TASK_PRIORITY, &task);
+
+    /* Start the tasks and timer running. */
+    vTaskStartScheduler();
+}
+
+/***
+ * Main
+ * @return
+ */
 int main( void )
 {
+    //Setup serial over USB and give a few seconds to settle before we start
     stdio_init_all();
     sleep_ms(2000);
-    printf("--- DEMARRAGE CHAPITRE 10 FINAL ---\n");
+    printf("GO\n");
 
-    // 1. Lancement du Multicore (Core 1)
-    multicore_launch_core1(core1_entry);
+    //Start tasks and scheduler
+    const char *rtos_name = "FreeRTOS";
+    printf("Starting %s on core 0:\n", rtos_name);
+    vLaunch();
 
-    // 2. Lancement du Scheduler FreeRTOS (Core 0)
-    xTaskCreate(mainTask, "MainThread", 512, NULL, TASK_PRIORITY, NULL);
-    vTaskStartScheduler();
 
     return 0;
 }
